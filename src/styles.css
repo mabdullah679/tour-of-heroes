@@ -1,1 +1,14 @@
-/* You can add global styles to this file, and also import other style files */
+/* Global styles.css */
+.hero-spider-man, .hero-iron-man, .hero-thor, .hero-hulk {
+    padding: 10px;
+    margin-bottom: 2px;  /* Ensures a small gap between items */
+  }
+  
+  .hero-spider-man { background-color: #ff6347; color: #1e90ff; }
+  .hero-iron-man { background-color: #cd5c5c; color: #ffd700; }
+  .hero-thor { background-color: #4682b4; color: #d2b48c; }
+  .hero-hulk { background-color: #008000; color: #808000; }
+  
+  li {
+    margin-bottom: 5px;  /* Adds space between list items */
+    border: 1px solid transparent; /* Adds a border */

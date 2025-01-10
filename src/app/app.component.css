@@ -1,0 +1,27 @@
+/* Global styles or in app.component.css */
+body {
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+  
+  .hero-spider-man { background-color: #ff6347; color: #1e90ff; } /* tomato and dodgerblue */
+  .hero-iron-man { background-color: #cd5c5c; color: #ffd700; }  /* indianred and gold */
+  .hero-thor { background-color: #4682b4; color: #d2b48c; }      /* steelblue and tan */
+  .hero-hulk { background-color: #008000; color: #808000; }      /* green and olive */
+  
+  /* Additional styles for better UI */
+  ul {
+    padding: 0;
+    list-style-type: none;
+  }
+  
+  li {
+    padding: 10px;
+    margin: 5px;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+  
+  li:hover {
+    opacity: 0.8;
+  }
+  

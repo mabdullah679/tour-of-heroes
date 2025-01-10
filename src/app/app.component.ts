@@ -1,12 +1,18 @@
+// This code goes in app.component.ts
 import { Component } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
+import { HeroesComponent } from './heroes/heroes.component'; // Ensure this path is correct
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet],
   templateUrl: './app.component.html',
-  styleUrl: './app.component.css'
+  styleUrls: ['./app.component.css'],
+  imports: [HeroesComponent] // Include HeroesComponent here to ensure it is recognized
 })
 export class AppComponent {
-  title = 'tour-of-heroes';
+  currentTheme: string = '';
+
+  onThemeChange(theme: string) {
+    this.currentTheme = theme;
+    document.body.className = theme;  // This changes the class of the body element
+  }
 }

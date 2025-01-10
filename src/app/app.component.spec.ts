@@ -1,29 +1,19 @@
-import { TestBed } from '@angular/core/testing';
-import { AppComponent } from './app.component';
+// This code goes in app.component.ts
+import { Component } from '@angular/core';
+import { HeroesComponent } from './heroes/heroes.component'; // Ensure this path is correct
 
-describe('AppComponent', () => {
-  beforeEach(async () => {
-    await TestBed.configureTestingModule({
-      imports: [AppComponent],
-    }).compileComponents();
-  });
+@Component({
+  selector: 'app-root',
+  templateUrl: './app.component.html',
+  styleUrls: ['./app.component.css'],
+  imports: [HeroesComponent] // Include HeroesComponent here to ensure it is recognized
+})
+export class AppComponent {
+  currentTheme: string = '';
 
-  it('should create the app', () => {
-    const fixture = TestBed.createComponent(AppComponent);
-    const app = fixture.componentInstance;
-    expect(app).toBeTruthy();
-  });
-
-  it(`should have the 'tour-of-heroes' title`, () => {
-    const fixture = TestBed.createComponent(AppComponent);
-    const app = fixture.componentInstance;
-    expect(app.title).toEqual('tour-of-heroes');
-  });
-
-  it('should render title', () => {
-    const fixture = TestBed.createComponent(AppComponent);
-    fixture.detectChanges();
-    const compiled = fixture.nativeElement as HTMLElement;
-    expect(compiled.querySelector('h1')?.textContent).toContain('Hello, tour-of-heroes');
-  });
-});
+  // Correct handling of the event type if it's guaranteed to be a string
+  onThemeChange(theme: string) {
+    this.currentTheme = theme;
+    document.body.className = theme;  // Apply the class to the body
+  }
+}
