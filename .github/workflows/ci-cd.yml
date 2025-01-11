@@ -4,67 +4,71 @@ on:
   push:
     branches:
       - main
-    paths-ignore: 
+    paths-ignore:
       - README.md
     tags-ignore:
       - "**.*"
   workflow_dispatch:  # Allows manual triggering of the pipeline
 
-jobs: 
+jobs:
   build-and-deploy:
+    # Only run if 'ci-cd' is in the commit message
     if: contains(github.event.head_commit.message, 'ci-cd')
     runs-on: ubuntu-latest
 
     steps:
-      # Step 1: Checkout code
-      - name: Checkout Code
+      # Step 1: Check out your code
+      - name: Check out code
         uses: actions/checkout@v2
-      
-      # Step 1.5: Clear npm cache
+
+      # Step 2: Clear the npm cache (no working-directory needed if package.json is in root)
       - name: Clear npm cache
-        working-directory: ./tour-of-heroes  # Define the correct directory here for npm cache clean
         run: npm cache clean --force
-    
-      # Step 2: Set up Node.js
+
+      # Step 3: Set up Node.js
       - name: Set up Node.js
         uses: actions/setup-node@v2
         with:
           node-version: '18.19.0'
 
-      # Step 3: Install Dependencies
+      # Step 4: Install npm dependencies
       - name: Install Dependencies
-        working-directory: ./tour-of-heroes  # Specify the directory for npm install
         run: npm install
-    
-      # Step 4: Build the Angular App
+
+      # Step 5: Build the Angular App
       - name: Build Angular App
-        working-directory: ./tour-of-heroes  # Specify the directory for building the Angular app
         run: npm run build
-    
-      # Step 5: Set up Docker
+
+      # Step 6: Set up Docker
       - name: Set up Docker
         uses: docker/setup-buildx-action@v2
 
-      # Step 6: Build and Push Docker Image
+      # Step 7: Build and Push Docker Image
       - name: Build and Push Docker Image
-        working-directory: ./tour-of-heroes  # Specify the directory for building and pushing Docker image
         run: |
+          # Build an image tagged with the commit SHA
           docker build -t halludbam/angular-heroes-app:${{ github.sha }} .
-          echo ${{ secrets.DOCKER_PASSWORD }} | docker login -u ${{ secrets.DOCKER_USERNAME }} --password-stdin
+          
+          # Optionally also tag 'latest' so your EC2 instance can pull it
+          docker tag halludbam/angular-heroes-app:${{ github.sha }} halludbam/angular-heroes-app:latest
+          
+          # Log into Docker Hub
+          echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+          
+          # Push both tags
           docker push halludbam/angular-heroes-app:${{ github.sha }}
-    
-      # Step 7: Install Terraform
+          docker push halludbam/angular-heroes-app:latest
+
+      # Step 8: Install Terraform
       - name: Install Terraform
-        working-directory: ./tour-of-heroes  # Specify the directory for Terraform installation
         run: |
           sudo apt-get update && sudo apt-get install -y gnupg software-properties-common curl
           curl -fsSL https://apt.releases.hashicorp.com/gpg | sudo gpg --dearmor -o /usr/share/keyrings/hashicorp-archive-keyring.gpg
           echo "deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/hashicorp.list
           sudo apt-get update && sudo apt-get install -y terraform
 
-      # Step 8: Deploy with Terraform
+      # Step 9: Deploy with Terraform
       - name: Deploy with Terraform
-        working-directory: ./tour-of-heroes  # Specify the directory for Terraform apply
         run: |
           terraform init
           terraform apply -auto-approve
