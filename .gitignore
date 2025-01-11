@@ -36,7 +36,7 @@ yarn-error.log*
 Thumbs.db
 
 # Environment Files (optional, add only if used)
-# /*.env
+
 ec2_key.pem
 ec2_key.pub
 .terraform
