@@ -41,3 +41,5 @@ ec2_key.pem
 ec2_key.pub
 .terraform
 .terraform/
+
+# simple comment
