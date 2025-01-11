@@ -19,12 +19,16 @@ jobs:
       # Step 1: Checkout code
       - name: Checkout Code
         uses: actions/checkout@v2
+      
+      # Step 1.5: Checkout code
+      - name: Clear npm cache
+        run: npm cache clean --force
     
       # Step 2: Set up Node.js
       - name: Set up Node.js
         uses: actions/setup-node@v2
         with:
-          node-version: '16'
+          node-version: '18.'
 
       # Step 3: Install Dependencies
       - name: Install Dependencies
