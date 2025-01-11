@@ -8,58 +8,66 @@ on:
       - README.md
     tags-ignore:
       - "**.*"
-  workflow_dispatch:  # Allows manual triggering of the pipeline
+  workflow_dispatch:
 
 jobs:
   build-and-deploy:
-    # Only run if 'ci-cd' is in the commit message
+    # Only run this job if the commit message contains 'ci-cd'
     if: contains(github.event.head_commit.message, 'ci-cd')
     runs-on: ubuntu-latest
 
     steps:
-      # Step 1: Check out your code
+      # 1. Check out code
       - name: Check out code
         uses: actions/checkout@v2
 
-      # Step 2: Clear the npm cache (no working-directory needed if package.json is in root)
-      - name: Clear npm cache
+      # 2. Configure AWS Credentials (for Terraform to create resources)
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-2
+
+      # 3. Clear NPM Cache
+      - name: Clear NPM Cache
         run: npm cache clean --force
 
-      # Step 3: Set up Node.js
+      # 4. Set up Node.js
       - name: Set up Node.js
         uses: actions/setup-node@v2
         with:
           node-version: '18.19.0'
 
-      # Step 4: Install npm dependencies
-      - name: Install Dependencies
+      # 5. Install NPM Dependencies
+      - name: Install NPM Dependencies
         run: npm install
 
-      # Step 5: Build the Angular App
+      # 6. Build the Angular App
       - name: Build Angular App
         run: npm run build
 
-      # Step 6: Set up Docker
-      - name: Set up Docker
+      # 7. Set up Docker Buildx
+      - name: Set Up Docker Buildx
         uses: docker/setup-buildx-action@v2
 
-      # Step 7: Build and Push Docker Image
+      # 8. Build and Push Docker Image
       - name: Build and Push Docker Image
         run: |
           # Build an image tagged with the commit SHA
           docker build -t halludbam/angular-heroes-app:${{ github.sha }} .
           
-          # Optionally also tag 'latest' so your EC2 instance can pull it
+          # Also tag it 'latest' so your EC2 instance can pull 'latest'
           docker tag halludbam/angular-heroes-app:${{ github.sha }} halludbam/angular-heroes-app:latest
           
-          # Log into Docker Hub
+          # Log in to Docker Hub
           echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
           
           # Push both tags
           docker push halludbam/angular-heroes-app:${{ github.sha }}
           docker push halludbam/angular-heroes-app:latest
 
-      # Step 8: Install Terraform
+      # 9. Install Terraform
       - name: Install Terraform
         run: |
           sudo apt-get update && sudo apt-get install -y gnupg software-properties-common curl
@@ -67,11 +75,11 @@ jobs:
           echo "deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/hashicorp.list
           sudo apt-get update && sudo apt-get install -y terraform
 
-      # Step 9: Deploy with Terraform
+      # 10. Deploy with Terraform
       - name: Deploy with Terraform
         env:
           EC2_PRIVATE_KEY: ${{ secrets.EC2_PRIVATE_KEY }}
         run: |
+          # Initialize and then apply, passing in the EC2 private key from GitHub Secrets
           terraform init
-          terraform apply -auto-approve \
-            -var "EC2_PRIVATE_KEY=${EC2_PRIVATE_KEY}"
+          terraform apply -auto-approve -var "EC2_PRIVATE_KEY=${EC2_PRIVATE_KEY}"
