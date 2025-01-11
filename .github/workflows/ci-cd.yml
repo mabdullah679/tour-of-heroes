@@ -12,7 +12,7 @@ on:
 
 jobs: 
   build-and-deploy:
-    if: contains(github.event.head_commit.message, 'ci-cd')
+    if: contains(github.event.head_commit.message, 'ready for build and deploy')
     runs-on: ubuntu-latest
 
     steps:
@@ -59,7 +59,7 @@ jobs:
 
       # Step 8: Deploy with Terraform
       - name: Deploy with Terraform
-        working-directory: ./tour-of-heroes
+        working-directory: ./  # Points to the root directory containing Terraform files
         run: |
           terraform init
           terraform apply -auto-approve
