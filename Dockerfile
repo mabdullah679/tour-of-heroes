@@ -1,4 +1,6 @@
+############################################################
 # Stage 1: Build the Angular App
+############################################################
 FROM node:18.19.0 AS build
 
 # Set working directory inside the container
@@ -13,17 +15,22 @@ RUN npm install
 # Copy the rest of the application source code
 COPY . .
 
-# Build the Angular app for prod
+# Build the Angular app for production
 RUN npm run build --output-path=dist --base-href=/
 
-# Use Nginx as the base image for serving the Angular app
+############################################################
+# Stage 2: Use Nginx to serve the built app
+############################################################
 FROM nginx:stable-alpine
 
-# Copy build Angular files to the Nginx html directory
+# Copy the custom nginx.conf for Angular/SPA routing
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+
+# Copy built Angular files from Stage 1 into Nginx's html folder
 COPY --from=build /app/dist /usr/share/nginx/html
 
 # Expose port 80 to the outside world
 EXPOSE 80
 
-# Start Nginx server
+# Start the Nginx server in the foreground
 CMD ["nginx", "-g", "daemon off;"]
