@@ -12,7 +12,7 @@ on:
 
 jobs: 
   build-and-deploy:
-    if: contains(github.event.head_commit.message, 'ci-cd')
+    if: contains(github.event.head_commit.message, 'ready for build and deploy')
     runs-on: ubuntu-latest
 
     steps:
@@ -22,6 +22,7 @@ jobs:
       
       # Step 1.5: Clear npm cache
       - name: Clear npm cache
+        working-directory: ./tour-of-heroes  # Define the correct directory here for npm cache clean
         run: npm cache clean --force
     
       # Step 2: Set up Node.js
@@ -32,10 +33,12 @@ jobs:
 
       # Step 3: Install Dependencies
       - name: Install Dependencies
+        working-directory: ./tour-of-heroes  # Specify the directory for npm install
         run: npm install
     
       # Step 4: Build the Angular App
       - name: Build Angular App
+        working-directory: ./tour-of-heroes  # Specify the directory for building the Angular app
         run: npm run build
     
       # Step 5: Set up Docker
@@ -44,6 +47,7 @@ jobs:
 
       # Step 6: Build and Push Docker Image
       - name: Build and Push Docker Image
+        working-directory: ./tour-of-heroes  # Specify the directory for building and pushing Docker image
         run: |
           docker build -t halludbam/angular-heroes-app:${{ github.sha }} .
           echo ${{ secrets.DOCKER_PASSWORD }} | docker login -u ${{ secrets.DOCKER_USERNAME }} --password-stdin
@@ -51,6 +55,7 @@ jobs:
     
       # Step 7: Install Terraform
       - name: Install Terraform
+        working-directory: ./tour-of-heroes  # Specify the directory for Terraform installation
         run: |
           sudo apt-get update && sudo apt-get install -y gnupg software-properties-common curl
           curl -fsSL https://apt.releases.hashicorp.com/gpg | sudo gpg --dearmor -o /usr/share/keyrings/hashicorp-archive-keyring.gpg
@@ -59,7 +64,7 @@ jobs:
 
       # Step 8: Deploy with Terraform
       - name: Deploy with Terraform
-        working-directory: ./  # Points to the root directory containing Terraform files
+        working-directory: ./tour-of-heroes  # Specify the directory for Terraform apply
         run: |
           terraform init
           terraform apply -auto-approve

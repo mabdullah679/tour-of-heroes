@@ -18,19 +18,19 @@ resource "aws_instance" "app" {
   connection {
     type        = "ssh"
     user        = "ec2-user"
-    private_key = file("${path.module}/ec2_key.pem")
+    private_key = file("/Users/muhammadabdullah/tour-of-heroes/ec2_key.pem")
     host        = self.public_ip
   }
 
   # Remote-exec provisioner to install Docker and run the app
-    provisioner "remote-exec" {
-        inline = [
-            "sudo dnf update -y",
-            "sudo dnf install -y docker",
-            "sudo systemctl start docker",
-            "sudo systemctl enable docker",
-            "sudo docker pull halludbam/angular-heroes-app:latest", # Replace <your-tag> with the correct tag
-            "sudo docker run -d -p 80:80 halludbam/angular-heroes-app:latest" # Ensure the correct tag is used
-        ]
-    }
+  provisioner "remote-exec" {
+    inline = [
+      "sudo dnf update -y",
+      "sudo dnf install -y docker",
+      "sudo systemctl start docker",
+      "sudo systemctl enable docker",
+      "sudo docker pull halludbam/angular-heroes-app:latest", # Replace <your-tag> with the correct tag
+      "sudo docker run -d -p 80:80 halludbam/angular-heroes-app:latest" # Ensure the correct tag is used
+    ]
+  }
 }
