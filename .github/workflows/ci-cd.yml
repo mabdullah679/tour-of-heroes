@@ -46,7 +46,7 @@ jobs:
       - name: Build and Push Docker Image
         run: |
           # Build an image tagged with the commit SHA
-          docker build -t halludbam/angular-heroes-app:${{ github.sha }} .
+          docker build -t halludbam/angular-heroes-app:${{ github.sha }} -f Dockerfile ./tour-of-heroes
           
           # Also tag it 'latest' so your EC2 instance can pull 'latest'
           docker tag halludbam/angular-heroes-app:${{ github.sha }} halludbam/angular-heroes-app:latest

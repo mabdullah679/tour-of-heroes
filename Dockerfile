@@ -12,8 +12,10 @@ COPY package*.json ./
 # Install dependencies
 RUN npm install
 
-# Copy the rest of the application source code
-COPY . .
+# Copy the Angular app source code
+COPY src ./src
+COPY angular.json ./
+COPY tsconfig*.json ./
 
 # Build the Angular app for production
 RUN npm run build --output-path=dist --base-href=/
@@ -27,7 +29,7 @@ FROM nginx:stable-alpine
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 
 # Copy built Angular files from Stage 1 into Nginx's html folder
-COPY --from=build /app/dist/tour-of-heroes/* /usr/share/nginx/html/
+COPY --from=build /app/dist /usr/share/nginx/html
 
 # Expose port 80 to the outside world
 EXPOSE 80
