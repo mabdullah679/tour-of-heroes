@@ -1,3 +1,8 @@
+variable "EC2_PRIVATE_KEY" {
+  type      = string
+  sensitive = true
+}
+
 provider "aws" {
   region = "us-east-2"
 }
@@ -5,32 +10,29 @@ provider "aws" {
 resource "aws_instance" "app" {
   ami           = "ami-0d7ae6a161c5c4239"
   instance_type = "t2.micro"
-
-  key_name = "ec2_key" # AWS-managed key pair
-
+  key_name      = "ec2_key" # AWS-managed key pair name
+  
   vpc_security_group_ids = ["sg-05c19d32506b81d7c"]
 
   tags = {
     Name = "heroes-angular-app"
   }
 
-  # Define the SSH connection details
   connection {
     type        = "ssh"
     user        = "ec2-user"
-    private_key = file("/Users/muhammadabdullah/tour-of-heroes/ec2_key.pem")
+    private_key = var.EC2_PRIVATE_KEY  # Use the Terraform variable here
     host        = self.public_ip
   }
 
-  # Remote-exec provisioner to install Docker and run the app
   provisioner "remote-exec" {
     inline = [
       "sudo dnf update -y",
       "sudo dnf install -y docker",
       "sudo systemctl start docker",
       "sudo systemctl enable docker",
-      "sudo docker pull halludbam/angular-heroes-app:latest", # Replace <your-tag> with the correct tag
-      "sudo docker run -d -p 80:80 halludbam/angular-heroes-app:latest" # Ensure the correct tag is used
+      "sudo docker pull halludbam/angular-heroes-app:latest",
+      "sudo docker run -d -p 80:80 halludbam/angular-heroes-app:latest"
     ]
   }
 }
