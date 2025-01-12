@@ -29,8 +29,12 @@ COPY nginx.conf /etc/nginx/conf.d/default.conf
 # Copy built Angular files from Stage 1 to Nginx's html directory
 COPY --from=build /app/dist/tour-of-heroes/browser /usr/share/nginx/html
 
-# Expose port 80
+# Ensure SSL certificates directory exists for HTTPS setup
+RUN mkdir -p /etc/letsencrypt
+
+# Expose both HTTP (80) and HTTPS (443) ports
 EXPOSE 80
+EXPOSE 443
 
 # Start Nginx server in the foreground
 CMD ["nginx", "-g", "daemon off;"]

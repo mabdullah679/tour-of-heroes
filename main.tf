@@ -46,7 +46,8 @@ resource "aws_instance" "app" {
       "sudo dnf update -y",
       "sudo dnf install -y docker",
       "sudo systemctl start docker",
-      "sudo systemctl enable docker"
+      "sudo systemctl enable docker",
+      "sudo usermod -aG docker ec2-user", # Ensure the user has Docker permissions
     ]
   }
 }
@@ -66,11 +67,12 @@ resource "null_resource" "docker_refresh" {
   provisioner "remote-exec" {
     inline = [
       "sudo docker pull halludbam/angular-heroes-app:latest",
-      # Optionally stop/remove existing containers
-      "sudo docker stop $(sudo docker ps -q) || true",
-      "sudo docker rm $(sudo docker ps -a -q) || true",
-      # Run new container
-      "sudo docker run -d -p 80:80 halludbam/angular-heroes-app:latest"
+      # Gracefully stop existing container if running
+      "EXISTING_CONTAINER=$(sudo docker ps -q -f name=angular-heroes-app) && if [ ! -z \"$EXISTING_CONTAINER\" ]; then sudo docker stop $EXISTING_CONTAINER && sudo docker rm $EXISTING_CONTAINER; fi",
+      # Run new container with correct volumes and ports
+      "sudo docker run -d --name angular-heroes-app -p 80:80 -p 443:443 -v /var/www/html:/usr/share/nginx/html -v /etc/letsencrypt:/etc/letsencrypt:ro halludbam/angular-heroes-app:latest",
+      # Ensure Nginx reloads with the correct configuration
+      "sudo docker exec angular-heroes-app nginx -s reload"
     ]
 
     connection {
@@ -81,3 +83,10 @@ resource "null_resource" "docker_refresh" {
     }
   }
 }
+
+############################################################
+# Notes:
+############################################################
+# 1. Updated `docker run` command to include proper volume mounting for SSL certificates and content.
+# 2. Added graceful container stop and removal process.
+# 3. Ensured compatibility with the existing CI/CD pipeline and the updated Dockerfile.

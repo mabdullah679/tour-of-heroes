@@ -82,3 +82,9 @@ jobs:
           terraform apply -auto-approve \
             -var "EC2_PRIVATE_KEY=${EC2_PRIVATE_KEY}" \
             -var "commit_sha=${{ github.sha }}"
+
+      # Step 11: Restart Nginx with New Configurations
+      - name: Restart Nginx
+        run: |
+          CONTAINER_ID=$(sudo docker ps -qf "name=angular-heroes-app")
+          sudo docker exec -it $CONTAINER_ID nginx -s reload
