@@ -18,38 +18,22 @@ variable "commit_sha" {
 ############################################################
 
 provider "aws" {
-  region = "us-east-2" # Update this if you are using a different region
+  region = "us-east-2" # Ensure this matches your desired region
 }
 
 ############################################################
-# 3. Subnet Configuration
-############################################################
-
-# Public Subnet
-resource "aws_subnet" "public_subnet" {
-  vpc_id                  = "vpc-01c88a4ca8066e461" # Your VPC ID
-  cidr_block              = "172.31.0.0/20"        # Your subnet CIDR
-  map_public_ip_on_launch = true                   # Ensure public IP for instances
-  availability_zone       = "us-east-2a"
-
-  tags = {
-    Name = "Public Subnet"
-  }
-}
-
-############################################################
-# 4. Security Group Configuration
+# 3. Security Group Configuration
 ############################################################
 
 # Security Group for EC2
 resource "aws_security_group" "app_sg" {
-  vpc_id = "vpc-01c88a4ca8066e461" # Your VPC ID
+  vpc_id = "vpc-01c88a4ca8066e461" # Your existing VPC ID
 
   ingress {
     from_port   = 22
     to_port     = 22
     protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"] # Allow SSH from anywhere; restrict this as needed
+    cidr_blocks = ["0.0.0.0/0"] # Allow SSH from anywhere; restrict as needed
   }
 
   ingress {
@@ -79,14 +63,14 @@ resource "aws_security_group" "app_sg" {
 }
 
 ############################################################
-# 5. EC2 Instance with User Data
+# 4. EC2 Instance with User Data
 ############################################################
 
 resource "aws_instance" "app" {
   ami                         = "ami-0d7ae6a161c5c4239" # Example Amazon Linux 2 AMI
   instance_type               = "t2.micro"
   key_name                    = "ec2_key"               # Must exist in AWS
-  subnet_id                   = aws_subnet.public_subnet.id
+  subnet_id                   = "subnet-0039d26229daad47a" # Reference the existing subnet ID
   vpc_security_group_ids      = [aws_security_group.app_sg.id]
   associate_public_ip_address = true                    # Ensure public IP is assigned
 
@@ -129,7 +113,7 @@ resource "aws_instance" "app" {
 }
 
 ############################################################
-# 6. Outputs
+# 5. Outputs
 ############################################################
 
 output "ec2_public_ip" {
