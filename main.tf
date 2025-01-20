@@ -18,7 +18,7 @@ variable "commit_sha" {
 ############################################################
 
 provider "aws" {
-  region = "us-east-2"
+  region = "us-east-2" # Update this if you are using a different region
 }
 
 ############################################################
@@ -28,7 +28,7 @@ provider "aws" {
 # Public Subnet
 resource "aws_subnet" "public_subnet" {
   vpc_id                  = "vpc-01c88a4ca8066e461" # Your VPC ID
-  cidr_block              = "10.0.1.0/24"          # Example CIDR block
+  cidr_block              = "172.31.0.0/20"        # Your subnet CIDR
   map_public_ip_on_launch = true                   # Ensure public IP for instances
   availability_zone       = "us-east-2a"
 
@@ -49,7 +49,7 @@ resource "aws_security_group" "app_sg" {
     from_port   = 22
     to_port     = 22
     protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"] # Allow SSH from anywhere; adjust as needed
+    cidr_blocks = ["0.0.0.0/0"] # Allow SSH from anywhere; restrict this as needed
   }
 
   ingress {
