@@ -1,3 +1,20 @@
+############################################################
+# Variables
+############################################################
+
+# Private key for EC2 SSH access
+variable "EC2_PRIVATE_KEY" {
+  description = "The private key to access the EC2 instance via SSH."
+  type        = string
+  sensitive   = true
+}
+
+# Commit SHA for triggering Docker refresh
+variable "commit_sha" {
+  description = "The commit SHA used to trigger a Docker image refresh."
+  type        = string
+}
+
 resource "null_resource" "wait_for_instance" {
   depends_on = [aws_instance.app]
 
