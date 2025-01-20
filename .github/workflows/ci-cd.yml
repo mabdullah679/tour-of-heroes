@@ -86,5 +86,5 @@ jobs:
       # Step 11: Restart Nginx with New Configurations
       - name: Restart Nginx
         run: |
-          CONTAINER_ID=$(sudo docker ps -qf "name=angular-heroes-app")
-          sudo docker exec -it $CONTAINER_ID nginx -s reload
+          CONTAINER_ID=$(docker ps -qf "name=angular-heroes-app")
+          docker exec -it $CONTAINER_ID nginx -s reload
