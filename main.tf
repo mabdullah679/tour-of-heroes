@@ -70,7 +70,7 @@ resource "null_resource" "docker_refresh" {
       # Gracefully stop existing container if running
       "EXISTING_CONTAINER=$(sudo docker ps -q -f name=angular-heroes-app) && if [ ! -z \"$EXISTING_CONTAINER\" ]; then sudo docker stop $EXISTING_CONTAINER && sudo docker rm $EXISTING_CONTAINER; fi",
       # Run new container with correct volumes and ports
-      "sudo docker run -d --name angular-heroes-app -p 80:80 -p 443:443 -v /var/www/html:/usr/share/nginx/html -v /etc/letsencrypt:/etc/letsencrypt:ro halludbam/angular-heroes-app:latest",
+      "sudo docker run -d --name angular-heroes-app -p 80:80 halludbam/angular-heroes-app:latest",
       # Ensure Nginx reloads with the correct configuration
       "sudo docker exec angular-heroes-app nginx -s reload"
     ]
@@ -87,6 +87,7 @@ resource "null_resource" "docker_refresh" {
 ############################################################
 # Notes:
 ############################################################
-# 1. Updated `docker run` command to include proper volume mounting for SSL certificates and content.
-# 2. Added graceful container stop and removal process.
-# 3. Ensured compatibility with the existing CI/CD pipeline and the updated Dockerfile.
+# 1. Removed SSL-related volume mounts in the `docker run` command.
+# 2. Adjusted ports to only expose HTTP (`80`), removing HTTPS (`443`).
+# 3. Ensured the Docker container remains functional without SSL volumes.
+# 4. Retained the `remote-exec` connection block with proper `host`, `user`, and `private_key` configurations.
