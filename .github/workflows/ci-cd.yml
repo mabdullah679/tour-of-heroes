@@ -38,7 +38,6 @@ jobs:
           # Push both tags to Docker Hub
           docker push halludbam/angular-heroes-app:${{ github.sha }}
           docker push halludbam/angular-heroes-app:latest
-
       # Step 4: Stop and Remove Existing Container (if any)
       - name: Stop and Remove Existing Container
         run: |
@@ -57,3 +56,29 @@ jobs:
         run: |
           CONTAINER_ID=$(docker ps -qf "name=angular-heroes-app") && \
           docker exec $CONTAINER_ID nginx -s reload
+      
+      # Step 7: Set up Terraform and Deploy to AWS
+      - name: Step 7 Setup Terraform
+        # Installs a specific version of Terraform
+        uses: hashicorp/setup-terraform@v2
+      
+      - name: Initialize Terraform
+        uses: terraform init
+        env: 
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY:  ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: us-east-2
+      
+      - name: Plan the Terraform script
+        run: terraform plan -var="commit_sha=${{ github.sha }}
+        env: 
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY:  ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: us-east-2
+      
+      - name: Apply Terraform
+        run: terraform apply
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY:  ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: us-east-2
