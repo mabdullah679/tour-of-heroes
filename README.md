@@ -1,59 +1,48 @@
-# TourOfHeroes
+# Angular App Hosted on EC2
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 19.0.7.
+## Overview
+This project showcases a fully functional Angular application deployed on an Amazon EC2 instance. It demonstrates best practices in DevOps, including CI/CD, cloud services, and containerization. The application is built using Angular and is designed to be robust, scalable, and secure.
 
-## Development server
+## Technologies Used
+- **Angular**: Frontend framework for building the user interface.
+- **AWS EC2**: Hosting the application in a cloud environment.
+- **Docker**: Containerizing the application for consistent deployment.
+- **GitHub Actions**: Automating deployment and integration processes.
+- **Terraform**: Automating the provisioning of the infrastructure.
+- **Nginx**: Serving the application and handling reverse proxy configurations.
 
-To start a local development server, run:
+## Features
+- Dynamic IP handling to reduce financial overhead.
+- Full CI/CD pipeline integration with GitHub Actions.
+- Automated Docker container management.
+- Secure and scalable deployment on AWS EC2.
 
-```bash
-ng serve
-```
+## Getting Started
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+### Prerequisites
+- Docker installed on your machine.
+- An AWS account.
+- Terraform installed.
+- GitHub account for CI/CD pipeline configuration.
 
-## Code scaffolding
+### Installation
+1. **Clone the repository**
+git clone https://github.com/mabdullah679/tour-of-heroes.git cd tour-of-heroes
+2. **Build the Docker image**
+3. docker build -t tour-of-heroes:latest .
+4. **Run the Docker container**
+5. docker run -p 80:80 tour-of-heroes:latest
+6. **Deploy using Terraform**
+Navigate to the Terraform directory and run:
+terraform init terraform apply
 
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
+## Usage
+Access the Angular frontend through your browser by navigating to the EC2 instance's IP address. The application is configured to serve on port 80.
 
-```bash
-ng generate component component-name
-```
+## Contact
+For any queries, you can reach out to me via email at muhammad.abdullah.0913@gmail.com.
 
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
+## Acknowledgments
+- Thanks to all the open-source libraries and tools used in this project.
+- Special thanks to everyone who supported and guided me through the development process.
 
-```bash
-ng generate --help
-```
-
-## Building
-
-To build the project run:
-
-```bash
-ng build
-```
-
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
-
-## Running unit tests
-
-To execute unit tests with the [Karma](https://karma-runner.github.io) test runner, use the following command:
-
-```bash
-ng test
-```
-
-## Running end-to-end tests
-
-For end-to-end (e2e) testing, run:
-
-```bash
-ng e2e
-```
-
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
-
-## Additional Resources
-
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
