@@ -26,11 +26,11 @@ provider "aws" {
 ############################################################
 
 resource "aws_instance" "app" {
-  ami                         = "ami-0d7ae6a161c5c4239"   # Example Amazon Linux 2 AMI in us-east-2
+  ami                         = "ami-0d7ae6a161c5c4239"  
   instance_type               = "t2.micro"
-  key_name                    = "ec2_key"                # Must exist in your AWS account
-  subnet_id                   = "subnet-0039d26229daad47a" # Replace with your subnet ID
-  vpc_security_group_ids      = ["sg-05c19d32506b81d7c"]   # Use the existing SG here
+  key_name                    = "ec2_key"                # Must exist in AWS account
+  subnet_id                   = "subnet-0039d26229daad47a"
+  vpc_security_group_ids      = ["sg-05c19d32506b81d7c"] 
   associate_public_ip_address = true
 
   tags = {
