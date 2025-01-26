@@ -63,8 +63,15 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_DEFAULT_REGION: us-east-2  # or whichever region you’re using
 
+      - name: Terraform Plan
+        run: terraform plan -input=false -var="commit_sha=${{ github.sha }}"        
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: us-east-2
+
       - name: Terraform Apply
-        run: terraform apply -auto-approve -var="commit_sha=${{ github.sha }}"
+        run: terraform apply -auto-approve -input=false -var="commit_sha=${{ github.sha }}"
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
