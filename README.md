@@ -28,16 +28,30 @@ This project showcases a fully functional Angular application deployed on an Ama
 ### Installation
 1. **Clone the repository**
 git clone https://github.com/mabdullah679/tour-of-heroes.git cd tour-of-heroes
-2. **Build the Docker image**
-3. docker build -t tour-of-heroes:latest .
-4. **Run the Docker container**
-5. docker run -p 80:80 tour-of-heroes:latest
-6. **Deploy using Terraform**
-Navigate to the Terraform directory and run:
+
+2. **Prepare and Run the Automation Script**
+The `bad.sh` script is designed to trigger the CI/CD pipeline, automating the build and deployment process. Follow these steps to make the script executable and run it:
+chmod +x bad.sh ./bad.sh
+This script will execute necessary git commands to trigger the GitHub Actions workflow which automates the entire CI/CD pipeline.
+
+3. **Build the Docker image** (if running locally)
+docker build -t tour-of-heroes:latest .
+
+4. **Run the Docker container** (if running locally)
+docker run -p 80:80 tour-of-heroes:latest
+
+5. **Deploy using Terraform** (automated by CI/CD if using `bad.sh`)
+If running manually, navigate to the Terraform directory and run:
 terraform init terraform apply
 
 ## Usage
 Access the Angular frontend through your browser by navigating to the EC2 instance's IP address. The application is configured to serve on port 80.
+
+## Contributing
+Contributions are welcome! For major changes, please open an issue first to discuss what you would like to change. Please make sure to update tests as appropriate.
+
+## License
+[MIT](https://choosealicense.com/licenses/mit/)
 
 ## Contact
 For any queries, you can reach out to me via email at muhammad.abdullah.0913@gmail.com.
@@ -45,4 +59,3 @@ For any queries, you can reach out to me via email at muhammad.abdullah.0913@gma
 ## Acknowledgments
 - Thanks to all the open-source libraries and tools used in this project.
 - Special thanks to everyone who supported and guided me through the development process.
-
