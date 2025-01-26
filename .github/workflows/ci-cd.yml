@@ -52,7 +52,7 @@ jobs:
           docker exec $CONTAINER_ID nginx -s reload
 
       # Step 7: Set up Terraform and Deploy to AWS
-      - name: Step 7: Setup Terraform
+      - name: Setup Terraform
         # This action installs a specified version of Terraform (defaults to latest if not specified)
         uses: hashicorp/setup-terraform@v2
 
