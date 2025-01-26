@@ -15,7 +15,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # Step 1: Check out the code
+      # Step 1: Check out code
       - name: Check out code
         uses: actions/checkout@v2
 
@@ -26,52 +26,77 @@ jobs:
       # Step 3: Build and Push Docker Image
       - name: Build and Push Docker Image
         run: |
+          echo "Building Docker image..."
           docker build -t halludbam/angular-heroes-app:${{ github.sha }} .
+
+          echo "Tagging image as 'latest'..."
           docker tag halludbam/angular-heroes-app:${{ github.sha }} halludbam/angular-heroes-app:latest
+
+          echo "Logging in to Docker Hub..."
           echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+
+          echo "Pushing images to Docker Hub..."
           docker push halludbam/angular-heroes-app:${{ github.sha }}
           docker push halludbam/angular-heroes-app:latest
 
-      # Step 4: Stop and Remove Existing Container (if any) on the Runner
+      # Step 4: Stop and Remove Existing Container (if any) on the GitHub runner
       - name: Stop and Remove Existing Container
         run: |
           EXISTING_CONTAINER=$(docker ps -q -f name=angular-heroes-app)
           if [ ! -z "$EXISTING_CONTAINER" ]; then
-            docker stop $EXISTING_CONTAINER && docker rm $EXISTING_CONTAINER
+            docker stop "$EXISTING_CONTAINER"
+            docker rm "$EXISTING_CONTAINER"
+          else
+            echo "No existing container found."
           fi
 
-      # Step 5: Run the New Docker Container on the Runner
+      # Step 5: Run the New Docker Container (Optional, for local test)
       - name: Run the New Docker Container
         run: |
           docker run -d --name angular-heroes-app -p 80:80 halludbam/angular-heroes-app:latest
 
-      # Step 6: Reload Nginx (if applicable)
+      # Step 6: Reload Nginx (Optional)
       - name: Reload Nginx
         run: |
           CONTAINER_ID=$(docker ps -qf "name=angular-heroes-app")
-          docker exec $CONTAINER_ID nginx -s reload
+          if [ -n "$CONTAINER_ID" ]; then
+            docker exec "$CONTAINER_ID" nginx -s reload || echo "Nginx reload skipped/not installed."
+          fi
 
-      # Step 7: Set up Terraform and Deploy to AWS
+      # Step 7: Set up Terraform
       - name: Setup Terraform
-        # This action installs a specified version of Terraform (defaults to latest if not specified)
         uses: hashicorp/setup-terraform@v2
 
+      # Step 8: Terraform Init
       - name: Terraform Init
-        run: terraform init
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_DEFAULT_REGION: us-east-2  # or whichever region you’re using
-
-      - name: Terraform Plan
-        run: terraform plan -input=false -var="commit_sha=${{ github.sha }}"        
+        run: terraform init -no-color -input=false
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_DEFAULT_REGION: us-east-2
 
+      # Step 9: Terraform Plan
+      - name: Terraform Plan
+        run: |
+          terraform plan \
+            -no-color \
+            -input=false \
+            -var="commit_sha=${{ github.sha }}" \
+            -var="EC2_PRIVATE_KEY=${{ secrets.EC2_PRIVATE_KEY_CONTENTS }}"
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: us-east-2
+
+      # Step 10: Terraform Apply
       - name: Terraform Apply
-        run: terraform apply -auto-approve -input=false -var="commit_sha=${{ github.sha }}"
+        run: |
+          terraform apply \
+            -auto-approve \
+            -no-color \
+            -input=false \
+            -var="commit_sha=${{ github.sha }}" \
+            -var="EC2_PRIVATE_KEY=${{ secrets.EC2_PRIVATE_KEY_CONTENTS }}"
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
