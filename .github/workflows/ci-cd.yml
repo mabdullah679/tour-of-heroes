@@ -15,7 +15,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # Step 1: Check out code
+      # Step 1: Check out the code
       - name: Check out code
         uses: actions/checkout@v2
 
@@ -39,28 +39,31 @@ jobs:
           docker push halludbam/angular-heroes-app:${{ github.sha }}
           docker push halludbam/angular-heroes-app:latest
 
-      # Step 4: Stop and Remove Existing Container (if any) on the GitHub runner
+      # Step 4: Stop and Remove Existing Container (if any) on the Runner
       - name: Stop and Remove Existing Container
         run: |
           EXISTING_CONTAINER=$(docker ps -q -f name=angular-heroes-app)
           if [ ! -z "$EXISTING_CONTAINER" ]; then
+            echo "Stopping and removing container..."
             docker stop "$EXISTING_CONTAINER"
             docker rm "$EXISTING_CONTAINER"
           else
             echo "No existing container found."
           fi
 
-      # Step 5: Run the New Docker Container (Optional, for local test)
+      # Step 5: Run the New Docker Container on the Runner (Optional)
       - name: Run the New Docker Container
         run: |
+          echo "Starting Angular container on runner..."
           docker run -d --name angular-heroes-app -p 80:80 halludbam/angular-heroes-app:latest
 
       # Step 6: Reload Nginx (Optional)
       - name: Reload Nginx
         run: |
+          echo "Attempting to reload Nginx..."
           CONTAINER_ID=$(docker ps -qf "name=angular-heroes-app")
           if [ -n "$CONTAINER_ID" ]; then
-            docker exec "$CONTAINER_ID" nginx -s reload || echo "Nginx reload skipped/not installed."
+            docker exec "$CONTAINER_ID" nginx -s reload || echo "Nginx reload skipped (not installed)."
           fi
 
       # Step 7: Set up Terraform

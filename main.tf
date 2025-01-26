@@ -18,60 +18,20 @@ variable "commit_sha" {
 ############################################################
 
 provider "aws" {
-  region = "us-east-2" # Change if using a different region
+  region = "us-east-2" # Change if you're using another region
 }
 
 ############################################################
-# 3. Security Group Configuration
-############################################################
-
-resource "aws_security_group" "app_sg" {
-  vpc_id = "vpc-01c88a4ca8066e461" # Update with your VPC ID
-
-  ingress {
-    from_port   = 22
-    to_port     = 22
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]  # SSH from anywhere (use more restrictive CIDR for production)
-  }
-
-  ingress {
-    from_port   = 80
-    to_port     = 80
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]  # HTTP from anywhere
-  }
-
-  ingress {
-    from_port   = 443
-    to_port     = 443
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]  # HTTPS from anywhere
-  }
-
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]  # All outbound traffic
-  }
-
-  tags = {
-    Name = "App Security Group"
-  }
-}
-
-############################################################
-# 4. EC2 Instance with User Data
+# 3. EC2 Instance Using Existing Security Group
 ############################################################
 
 resource "aws_instance" "app" {
-  ami                         = "ami-0d7ae6a161c5c4239"  # Update to a valid Amazon Linux 2 AMI in your region
+  ami                         = "ami-0d7ae6a161c5c4239"   # Example Amazon Linux 2 AMI in us-east-2
   instance_type               = "t2.micro"
-  key_name                    = "ec2_key"               # Must exist in your AWS account
-  subnet_id                   = "subnet-0039d26229daad47a" # Update with a valid subnet ID
-  vpc_security_group_ids      = [aws_security_group.app_sg.id]
-  associate_public_ip_address = true  # Ensures the instance has a public IP
+  key_name                    = "ec2_key"                # Must exist in your AWS account
+  subnet_id                   = "subnet-0039d26229daad47a" # Replace with your subnet ID
+  vpc_security_group_ids      = ["sg-05c19d32506b81d7c"]   # Use the existing SG here
+  associate_public_ip_address = true
 
   tags = {
     Name = "heroes-angular-app"
@@ -82,17 +42,17 @@ resource "aws_instance" "app" {
     #!/bin/bash
     set -e
 
-    # Update system and install Docker
+    # Update the system and install Docker
     sudo dnf update -y
     sudo dnf install -y docker
     sudo systemctl start docker
     sudo systemctl enable docker
     sudo usermod -aG docker ec2-user
 
-    # Pull the latest Docker image
+    # Pull the latest Docker image (from Docker Hub)
     sudo docker pull halludbam/angular-heroes-app:latest
 
-    # Gracefully stop and remove existing container (if any)
+    # Stop and remove existing container (if any)
     EXISTING_CONTAINER=$(sudo docker ps -q -f name=angular-heroes-app)
     if [ ! -z "$EXISTING_CONTAINER" ]; then
       sudo docker stop $EXISTING_CONTAINER
@@ -103,7 +63,7 @@ resource "aws_instance" "app" {
     sudo docker run -d --name angular-heroes-app -p 80:80 halludbam/angular-heroes-app:latest
   EOF
 
-  # Allow Terraform to SSH into the instance if needed
+  # Optional SSH access via Terraform
   connection {
     type        = "ssh"
     user        = "ec2-user"
@@ -113,7 +73,7 @@ resource "aws_instance" "app" {
 }
 
 ############################################################
-# 5. Outputs
+# 4. Outputs
 ############################################################
 
 output "ec2_public_ip" {
