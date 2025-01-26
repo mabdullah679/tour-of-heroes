@@ -26,4 +26,3 @@ COPY --from=build /app/dist/browser /usr/share/nginx/html
 COPY cont-nginx.conf /etc/nginx/nginx.conf
 # Start Nginx
 CMD ["nginx", "-g", "daemon off;"]
-# comment
