@@ -12,4 +12,5 @@ Do not touch / care:
 - `main.tf` targets a real AWS account; never run `terraform apply`. Never commit `*.tfstate`, `.pem`, key CSVs (gitignored).
 - `apply-certs.sh`, `stop-instance.sh`, `nginx.conf` are not referenced by the Dockerfile or workflows (the image uses `cont-nginx.conf`).
 - `src/app/app.modules.ts` is actually the bootstrap file; `app.component.spec.ts` contains component code, not a test.
+- Known defect (not fixed): the container 404s on non-`/` paths (see README Known issues); the matching Playwright test is `test.fixme`.
 - Keep `README.md` and `README.txt` in sync.

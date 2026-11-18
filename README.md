@@ -34,7 +34,6 @@ If port 80 is taken, change the left side of `-p`, e.g. `-p 8080:80`. If `ng tes
 |---|---|
 | Open `/` | "My Heroes" with Spider-Man, Iron Man, Thor, Hulk ([heroes.component.ts](src/app/heroes/heroes.component.ts)) |
 | Click a hero | Details (id, name) appear and the page `<body>` gets the hero's theme class ([app.component.ts](src/app/app.component.ts)) |
-| Open any other path in the container | nginx serves `index.html` ([cont-nginx.conf](cont-nginx.conf)) |
 
 There is no backend, data store or HTTP API.
 
@@ -43,9 +42,14 @@ There is no backend, data store or HTTP API.
 | Command | Covers | Needs |
 |---|---|---|
 | `npm run test:ci` | 1 Karma spec: `HeroesComponent` creates | Chrome |
-| `./e2e/run-staging.sh` | Builds the shipped Dockerfile, runs it on `localhost:18480`, 3 Playwright specs: hero list, click-to-details and theme class, nginx fallback | Docker, Chrome |
+| `./e2e/run-staging.sh` | Builds the shipped Dockerfile, runs it on `localhost:18480`, 2 Playwright specs: hero list, click-to-details and theme class (+1 skipped `fixme`, see Known issues) | Docker, Chrome |
 
 Nothing tests the Terraform, the deploy workflow or `AppComponent`. CI ([ci.yml](.github/workflows/ci.yml)) runs build, unit tests, the staging suite and a gitleaks scan.
+
+## Known issues
+
+- The container returns 404 for any path other than `/`: [cont-nginx.conf](cont-nginx.conf) includes nginx's stock `default.conf`, and the `try_files` fallback lives only in the unused [nginx.conf](nginx.conf). Harmless today because the app has no routes. Captured as a skipped test in [e2e/heroes.spec.js](e2e/heroes.spec.js). Not fixed in the sanitize pass.
+- No `LICENSE` file exists in the repo.
 
 ## Layout
 
