@@ -43,3 +43,10 @@ ec2_key.pub
 .terraform/
 .terraform.lock.hcl
 github-actions-user_accessKeys.csv
+# Terraform state can hold account IDs, IPs and secrets; never commit it
+*.tfstate
+*.tfstate.*
+.DS_Store
+/e2e/node_modules
+/e2e/test-results
+/e2e/playwright-report
