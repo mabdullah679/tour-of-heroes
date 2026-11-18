@@ -1,61 +1,68 @@
-# Angular App Hosted on EC2
+# tour-of-heroes
 
-## Overview
-This project showcases a fully functional Angular application deployed on an Amazon EC2 instance. It demonstrates best practices in DevOps, including CI/CD, cloud services, and containerization. The application is built using Angular and is designed to be robust, scalable, and secure.
+Small Angular 19 app that lists four Marvel heroes; clicking one shows its details and switches the page theme. The repo also holds Docker, nginx and Terraform files used to host it on a single AWS EC2 instance.
 
-## Technologies Used
-- **Angular**: Frontend framework for building the user interface.
-- **AWS EC2**: Hosting the application in a cloud environment.
-- **Docker**: Containerizing the application for consistent deployment.
-- **GitHub Actions**: Automating deployment and integration processes.
-- **Terraform**: Automating the provisioning of the infrastructure.
-- **Nginx**: Serving the application and handling reverse proxy configurations.
+## Flow
 
-## Features
-- Dynamic IP handling to reduce financial overhead.
-- Full CI/CD pipeline integration with GitHub Actions.
-- Automated Docker container management.
-- Secure and scalable deployment on AWS EC2.
+```
+browser --> nginx (container, :80) --> static Angular build (dist/browser)
 
-## Getting Started
+deploy path (ci-cd.yml, on a push to main whose message contains "ci-cd"):
+git push --> GitHub Actions --> docker build/push (Docker Hub) --> terraform apply --> EC2 runs the container
+```
 
-### Prerequisites
-- Docker installed on your machine.
-- An AWS account.
-- Terraform installed.
-- GitHub account for CI/CD pipeline configuration.
+Not local: the deploy path needs a Docker Hub account, an AWS account with an existing key pair, subnet and security group, and GitHub secrets. Running the app itself needs none of that.
 
-### Installation
-1. **Clone the repository**
-git clone https://github.com/mabdullah679/tour-of-heroes.git cd tour-of-heroes
+## Prerequisites
 
-2. **Prepare and Run the Automation Script**
-The `bad.sh` script is designed to trigger the CI/CD pipeline, automating the build and deployment process. Follow these steps to make the script executable and run it:
-chmod +x bad.sh ./bad.sh
-This script will execute necessary git commands to trigger the GitHub Actions workflow which automates the entire CI/CD pipeline.
+- Node.js 20+ and npm (CI uses 20; checked locally on 26).
+- Chrome (for unit tests and the Playwright suite).
+- Docker (for the container and the staging suite).
+- Not needed to run or test: AWS, Terraform, Docker Hub.
 
-3. **Build the Docker image** (if running locally)
-docker build -t tour-of-heroes:latest .
+## Run it
 
-4. **Run the Docker container** (if running locally)
-docker run -p 80:80 tour-of-heroes:latest
+1. `npm ci`
+2. `npm start` and open `http://localhost:4200`.
+3. Container instead: `docker build -t tour-of-heroes:latest . && docker run -p 80:80 tour-of-heroes:latest`, then open `http://localhost`.
 
-5. **Deploy using Terraform** (automated by CI/CD if using `bad.sh`)
-If running manually, navigate to the Terraform directory and run:
-terraform init terraform apply
+If port 80 is taken, change the left side of `-p`, e.g. `-p 8080:80`. If `ng test` hangs while launching Chrome, use `npm run test:ci` (adds `--no-sandbox`).
 
-## Usage
-Access the Angular frontend through your browser by navigating to the EC2 instance's IP address. The application is configured to serve on port 80.
+## What it does
 
-## Contributing
-Contributions are welcome! For major changes, please open an issue first to discuss what you would like to change. Please make sure to update tests as appropriate.
+| Action | Result |
+|---|---|
+| Open `/` | "My Heroes" with Spider-Man, Iron Man, Thor, Hulk ([heroes.component.ts](src/app/heroes/heroes.component.ts)) |
+| Click a hero | Details (id, name) appear and the page `<body>` gets the hero's theme class ([app.component.ts](src/app/app.component.ts)) |
+| Open any other path in the container | nginx serves `index.html` ([cont-nginx.conf](cont-nginx.conf)) |
 
-## License
-[MIT](https://choosealicense.com/licenses/mit/)
+There is no backend, data store or HTTP API.
 
-## Contact
-For any queries, you can reach out to me via email at muhammad.abdullah.0913@gmail.com.
+## Tests
 
-## Acknowledgments
-- Thanks to all the open-source libraries and tools used in this project.
-- Special thanks to everyone who supported and guided me through the development process.
+| Command | Covers | Needs |
+|---|---|---|
+| `npm run test:ci` | 1 Karma spec: `HeroesComponent` creates | Chrome |
+| `./e2e/run-staging.sh` | Builds the shipped Dockerfile, runs it on `localhost:18480`, 3 Playwright specs: hero list, click-to-details and theme class, nginx fallback | Docker, Chrome |
+
+Nothing tests the Terraform, the deploy workflow or `AppComponent`. CI ([ci.yml](.github/workflows/ci.yml)) runs build, unit tests, the staging suite and a gitleaks scan.
+
+## Layout
+
+| Path | Role |
+|---|---|
+| [src/](src) | Angular app ([bootstrap](src/app/app.modules.ts), [app](src/app/app.component.ts), [heroes](src/app/heroes/heroes.component.ts)) |
+| [Dockerfile](Dockerfile), [cont-nginx.conf](cont-nginx.conf) | Build with node:18, serve with nginx |
+| [e2e/](e2e) | Playwright suite and staging runner |
+| [karma.conf.js](karma.conf.js) | Headless Chrome launcher for CI |
+| [main.tf](main.tf) | One EC2 instance (us-east-2, t2.micro) that pulls and runs the Docker Hub image |
+| [.github/workflows/ci.yml](.github/workflows/ci.yml) | PR checks |
+| [.github/workflows/ci-cd.yml](.github/workflows/ci-cd.yml) | Deploy pipeline |
+| [bad.sh](bad.sh) | Commits modified files with message `ci-cd` and pushes to `main`, which triggers the deploy |
+| [apply-certs.sh](apply-certs.sh), [nginx.conf](nginx.conf), [stop-instance.sh](stop-instance.sh) | Not referenced by the Dockerfile, Terraform or workflows; TLS is not enabled in the shipped image |
+| [CLAUDE.md](CLAUDE.md) | Notes for AI sessions |
+
+## Design notes
+
+- The deploy job runs only when the head commit message contains `ci-cd` (the `if:` in [ci-cd.yml](.github/workflows/ci-cd.yml)), so ordinary pushes skip it.
+- The container image is built in CI and pulled by the instance at first boot (`user_data`); the alternative of building on the instance would need Node there.

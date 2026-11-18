@@ -5,7 +5,7 @@ module.exports = defineConfig({
   testMatch: '*.spec.js',
   timeout: 30000,
   use: {
-    baseURL: process.env.BASE_URL || 'http://localhost:18080',
+    baseURL: process.env.BASE_URL || 'http://localhost:18480',
     channel: process.env.PW_CHANNEL || 'chrome', // system Chrome; no browser download needed
     screenshot: 'on',
   },
